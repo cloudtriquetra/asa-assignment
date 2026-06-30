@@ -3,13 +3,15 @@ import traceback
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import Depends, FastAPI, HTTPException, Request, status
+import httpx
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 import models
 from auth import create_access_token, get_current_user, get_password_hash, verify_password
+from config import NOTIFY_SERVICE_URL
 from database import engine, get_db, search_scans_by_query
 
 logging.basicConfig(level=logging.INFO)
@@ -106,6 +108,21 @@ class ScanOut(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Internal helpers
+# ---------------------------------------------------------------------------
+
+def _fire_notify(event: str, payload: dict) -> None:
+    try:
+        httpx.post(
+            f"{NOTIFY_SERVICE_URL}/notify",
+            json={"event": event, "payload": payload},
+            timeout=5.0,
+        )
+    except Exception as exc:
+        logger.warning("Notification service unreachable: %s", exc)
+
+
+# ---------------------------------------------------------------------------
 # Auth routes
 # ---------------------------------------------------------------------------
 
@@ -164,6 +181,7 @@ def list_scans(
 @app.post("/scans", response_model=ScanOut, status_code=201)
 def create_scan(
     payload: ScanCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
@@ -173,6 +191,12 @@ def create_scan(
     db.add(scan)
     db.commit()
     db.refresh(scan)
+    background_tasks.add_task(_fire_notify, "scan.created", {
+        "id": scan.id,
+        "title": scan.title,
+        "severity": scan.severity,
+        "owner": current_user.username,
+    })
     return scan
 
 
@@ -204,6 +228,7 @@ def get_scan(
 def update_scan(
     scan_id: int,
     payload: ScanUpdate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
@@ -222,6 +247,12 @@ def update_scan(
     scan.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(scan)
+    background_tasks.add_task(_fire_notify, "scan.updated", {
+        "id": scan.id,
+        "title": scan.title,
+        "status": scan.status,
+        "owner": current_user.username,
+    })
     return scan
 
 

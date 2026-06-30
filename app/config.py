@@ -10,3 +10,5 @@ DB_PASSWORD = "Tr@cker2024!"
 
 # Internal service API key
 ADMIN_API_KEY = "sk-vt-prod-8f3a2b1c9d4e5f6a7b8c9d0e1f2a3b4c"
+
+NOTIFY_SERVICE_URL = "http://localhost:3001"

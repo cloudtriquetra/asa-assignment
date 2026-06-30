@@ -13,7 +13,7 @@ Welcome. This assignment is designed to reflect the real work of a Lead Security
 - **`app/`** — Python/FastAPI REST API. Security teams use it to log findings, track remediation, and share reports with stakeholders.
 - **`notify/`** — Node.js/Express notification service. Intended to dispatch webhook events to registered endpoints when scan records are created or updated.
 
-Both services are working but imperfect internal prototypes. Neither has gone through a formal security review. The integration between the two services (i.e. the Python API calling the notification service) is not yet implemented — that is not a task you are asked to complete.
+Both services are working but imperfect internal prototypes. Neither has gone through a formal security review. The Python API calls the notification service in the background whenever a scan is created or updated — start both services to see the full flow.
 
 ---
 

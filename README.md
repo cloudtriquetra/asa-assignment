@@ -8,9 +8,12 @@ Welcome. This assignment is designed to reflect the real work of a Lead Security
 
 ## Background
 
-**VulnTracker** is a REST API for managing vulnerability scan results. Security teams use it to log findings from automated scans, track remediation progress, and share reports with stakeholders.
+**VulnTracker** is a two-service system for managing vulnerability scan results:
 
-The codebase you have been given is a working but imperfect internal prototype. It was written quickly to validate the concept and has not gone through a formal security review.
+- **`app/`** — Python/FastAPI REST API. Security teams use it to log findings, track remediation, and share reports with stakeholders.
+- **`notify/`** — Node.js/Express notification service. Dispatches webhook events to registered endpoints when scan records are created or updated.
+
+Both services are working but imperfect internal prototypes. Neither has gone through a formal security review.
 
 ---
 
@@ -30,28 +33,46 @@ git push -u origin main
 
 From here, work on your own repo and share its URL when you submit.
 
-**Requirements:** Python 3.11 (exactly — see CI), Docker
+**Requirements:** Python 3.11 (exactly — see CI), Node.js 20+, Docker
+
+**Python API (`app/`)**
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate       # Windows: .venv\Scripts\activate
-
 pip install -r requirements.txt
 ```
 
-The app must be started from inside the `app/` directory — the modules use bare imports and won't resolve from the repo root:
+The API must be started from inside the `app/` directory — the modules use bare imports and won't resolve from the repo root:
 
 ```bash
 cd app
 uvicorn main:app --reload
 ```
 
-The API will be available at `http://localhost:8000`. Interactive docs at `http://localhost:8000/docs`.
+Available at `http://localhost:8000`. Interactive docs at `http://localhost:8000/docs`.
 
-Run the test suite from the **repo root** (not from `app/`):
+Run the Python test suite from the **repo root**:
 
 ```bash
 pytest tests/ -v
+```
+
+**Notification Service (`notify/`)**
+
+```bash
+cd notify
+npm install
+npm start
+```
+
+Available at `http://localhost:3001`.
+
+Run the Node.js test suite:
+
+```bash
+cd notify
+npm test
 ```
 
 ---
@@ -162,8 +183,9 @@ Push your completed solution to your own GitHub repository and share the URL wit
 
 ```
 /
-├── app/                        # extended application code
-├── Dockerfile                  # mandatory
+├── app/                        # extended Python API code
+├── notify/                     # extended Node.js notification service
+├── Dockerfile                  # mandatory (may cover one or both services)
 ├── reports/
 │   ├── sast.<tool>.json
 │   ├── sca.<tool>.json
@@ -174,7 +196,7 @@ Push your completed solution to your own GitHub repository and share the URL wit
 │   ├── findings.md
 │   ├── remediation-plan.md
 │   └── executive-summary.md
-├── tests/                      # updated if you added tests
+├── tests/                      # updated if you added Python tests
 └── README.md                   # update with Docker build/run instructions
 ```
 

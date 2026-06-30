@@ -24,6 +24,25 @@ jobs:
       - name: Run tests
         run: pytest tests/ -v
 
+  test-notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: notify
+
+      - name: Run tests
+        run: npm test
+        working-directory: notify
+
   # TODO (candidates): Add the following security scanning jobs.
   # Tool selection is your decision — document your choices in findings.md.
   #
